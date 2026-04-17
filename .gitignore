@@ -29,11 +29,7 @@ application/sessions/*
 .env.*
 !.env.example
 
-# DB / Backup
-*.sql
-*.sql.gz
-*.backup
-application/config/database.php  # Remove if contains real credentials
+
 
 # Docs / Builds (if present)
 user_guide_src/build/*
