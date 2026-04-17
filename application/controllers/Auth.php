@@ -15,19 +15,8 @@ class Auth extends CI_Controller
 		redirect('login');
 	}
 
-	// public function register()
-	// {
-	// 	$this->db->insert('users', [
-	// 		'name' => 'John',
-	// 		'username' => 'admin',
-	// 		'password' => password_hash('Welcome123', PASSWORD_DEFAULT),
-	// 		'role' => 'admin',
-	// 	]);
-	// }
-
 	public function login()
 	{
-		// GET: Show login form (HTML page)
 		if ($this->input->method() === 'get') {
 			$data = array(
 				'page_title' => 'Login | Checklist',
@@ -61,13 +50,11 @@ class Auth extends CI_Controller
 		$user = $this->User_model->login_user($email, $password);
 
 		if ($user) {
-			// Session for browser
 			$this->session->set_userdata([
 				'user_id' => $user['id'],
 				'username' => $user['username']
 			]);
 
-			// JWT for API
 			$payload = [
 				'user_id' => $user['id'],
 				'username' => $user['username']
@@ -75,15 +62,17 @@ class Auth extends CI_Controller
 			$token = $this->jwt_lib->encode($payload);
 
 			if ($this->input->is_ajax_request() || strpos($_SERVER['CONTENT_TYPE'] ?? '', 'application/json') !== false) {
-				// API response
 				$this->output->set_content_type('application/json');
 				echo json_encode([
 					'success' => true,
 					'token' => $token,
-					'user' => ['id' => $user['id'], 'email' => $user['username']]
+					'user' => [
+						'id' => (int) $user['id'],
+						'name' => $user['name'] ?? $user['username'],
+						'email' => !empty($user['email']) ? $user['email'] : $user['username']
+					]
 				]);
 			} else {
-				// Browser redirect
 				redirect('dashboard');
 			}
 		} else {
@@ -98,4 +87,3 @@ class Auth extends CI_Controller
 		}
 	}
 }
-

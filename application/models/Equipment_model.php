@@ -18,6 +18,9 @@ class Equipment_model extends CI_Model {
         $query = $this->db->get('equipment');
         return $query->row_array();
     }
+
+    public function count_all() {
+        return (int) $this->db->count_all('equipment');
+    }
 }
 ?>
-
