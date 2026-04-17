@@ -1,0 +1,82 @@
+.DS_Store
+
+application/cache/*
+!application/cache/index.html
+
+!application/*/.htaccess
+
+# Dependencies
+# ------------
+/vendor/
+node_modules/
+.sass-cache/
+dist/
+build/
+composer.lock
+
+# Runtime / Storage
+# -----------------
+/uploads/
+application/uploads/*
+storage/
+application/storage/*
+application/sessions/*
+/storage/
+
+# Environment / Config
+# -------------------
+*.env
+.env.*
+!.env.example
+
+# DB / Backup
+*.sql
+*.sql.gz
+*.backup
+application/config/database.php  # Remove if contains real credentials
+
+# Docs / Builds (if present)
+user_guide_src/build/*
+user_guide_src/cilexer/build/*
+user_guide_src/cilexer/dist/*
+user_guide_src/cilexer/pycilexer.egg-info/*
+/vendor/
+
+# OS / Editor files
+# --------------------
+.DS_Store
+Thumbs.db
+.DS_Store?
+ehthumbs.db
+ehthumbs_vi.db
+*~
+
+# VSCode
+.vscode/
+
+# IDE
+/nbproject/
+.idea/
+*.swp
+*.swo
+
+## Sublime Text cache files
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Tests
+/tests/tests/
+/tests/results/
+
+# Logs / Temp
+# ------------
+*.log
+*.tmp
+/tmp/
+application/logs/*
+!application/logs/index.html
+
+/assets
