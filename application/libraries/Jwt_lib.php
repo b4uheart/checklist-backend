@@ -11,13 +11,15 @@ require_once APPPATH . 'third_party/JWT/src/SignatureInvalidException.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-class Jwt_lib {
+class Jwt_lib
+{
     protected $CI;
     protected $secret;
     protected $alg = 'HS256';
     protected $leeway = 60; // 1 min clock skew
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->CI =& get_instance();
         $this->CI->config->load('config', TRUE);
         $this->secret = $this->CI->config->item('jwt_secret', 'config');
@@ -30,12 +32,15 @@ class Jwt_lib {
     /**
      * Generate JWT token
      */
-    public function encode($payload) {
+    public function encode($payload, $time)
+    {
         if (empty($this->secret)) {
             return false;
         }
+
         $payload['iat'] = time();
-        $payload['exp'] = time() + (60 * 60); // 1 hour
+        $payload['exp'] = time() + $time; // ✅ correct
+
         try {
             return JWT::encode($payload, $this->secret, $this->alg);
         } catch (Exception $e) {
@@ -47,7 +52,8 @@ class Jwt_lib {
     /**
      * Decode and verify JWT token
      */
-    public function decode($token) {
+    public function decode($token)
+    {
         if (empty($this->secret)) {
             return false;
         }
@@ -63,10 +69,10 @@ class Jwt_lib {
     /**
      * Get user_id from verified token
      */
-    public function get_user_id($token) {
+    public function get_user_id($token)
+    {
         $decoded = $this->decode($token);
         return $decoded ? ($decoded->user_id ?? false) : false;
     }
 }
 ?>
-

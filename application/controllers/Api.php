@@ -25,6 +25,8 @@ class Api extends CI_Controller
             $token = substr($auth_header, 7);
             $decoded = $this->jwt_lib->decode($token);
 
+           // file_put_contents('debug.log',json_encode($token));
+
             if ($decoded && isset($decoded->user_id)) {
                 $this->user_id = (int) $decoded->user_id;
                 return;
@@ -43,8 +45,10 @@ class Api extends CI_Controller
     {
         $headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
 
+        
         foreach ($headers as $key => $value) {
             if (strtolower($key) === 'authorization') {
+                file_put_contents('debug.log',$value);
                 return $value;
             }
         }
@@ -98,6 +102,9 @@ class Api extends CI_Controller
     {
         $equipment = $this->Equipment_model->get_by_qr($qr_code);
         if ($equipment) {
+            $equipment['last_maintenance_date'] = $equipment['last_maintenance_date'] ? date('c', strtotime($equipment['last_maintenance_date'])) : null;
+            $equipment['next_maintenance_date'] = $equipment['next_maintenance_date'] ? date('c', strtotime($equipment['next_maintenance_date'])) : null;
+            $equipment['last_inspection_date'] = $equipment['last_inspection_date'] ? date('c', strtotime($equipment['last_inspection_date'])) : null;
             $this->respond(array('success' => true, 'data' => $equipment));
         } else {
             $this->respond(array('success' => false, 'error' => 'Equipment not found', 'code' => 'EQUIPMENT_NOT_FOUND'), 404);
@@ -127,6 +134,17 @@ class Api extends CI_Controller
             return;
         }
 
+        // Check inspection restriction
+        $last_inspection_date = $this->Equipment_model->get_last_inspection_date($equipment_id);
+        if ($last_inspection_date && $last_inspection_date == date('Y-m-d')) {
+            $this->respond(array(
+                'success' => false,
+                'error' => 'Inspection already done today. Can only be done tomorrow.',
+                'code' => 'INSPECTION_TODAY_BLOCKED'
+            ), 400);
+            return;
+        }
+
         $inspection_id = $this->Inspection_model->create($equipment_id, $this->user_id);
         $saved_count = $this->Inspection_response_model->bulk_create($inspection_id, $responses);
 
@@ -135,6 +153,10 @@ class Api extends CI_Controller
             'status' => 'completed',
             'completed_at' => date('Y-m-d H:i:s')
         ));
+
+        // Update last_inspection_date on equipment
+        $today_date = date('Y-m-d');
+        $this->Equipment_model->update_last_inspection_date($equipment_id, $today_date);
 
         $this->respond(array(
             'success' => true,
@@ -240,6 +262,9 @@ class Api extends CI_Controller
                 'equipment_id' => (int) $row['equipment_id'],
                 'equipment_name' => $row['equipment_name'],
                 'qr_code' => $row['qr_code'],
+                'last_maintenance_date' => !empty($row['last_maintenance_date']) ? date('c', strtotime($row['last_maintenance_date'])) : null,
+                'next_maintenance_date' => !empty($row['next_maintenance_date']) ? date('c', strtotime($row['next_maintenance_date'])) : null,
+                'last_inspection_date' => !empty($row['last_inspection_date']) ? date('c', strtotime($row['last_inspection_date'])) : null,
                 'completed_at' => !empty($row['completed_at']) ? date('c', strtotime($row['completed_at'])) : null,
                 'answered_count' => $answered,
                 'total_questions' => $total_questions,
@@ -274,6 +299,9 @@ class Api extends CI_Controller
                     'id' => (int) $inspection['equipment_id'],
                     'name' => $inspection['equipment_name'],
                     'qr_code' => $inspection['qr_code'],
+                    'last_maintenance_date' => !empty($inspection['last_maintenance_date']) ? date('c', strtotime($inspection['last_maintenance_date'])) : null,
+                    'next_maintenance_date' => !empty($inspection['next_maintenance_date']) ? date('c', strtotime($inspection['next_maintenance_date'])) : null,
+                    'last_inspection_date' => !empty($inspection['last_inspection_date']) ? date('c', strtotime($inspection['last_inspection_date'])) : null,
                 ),
                 'completed_at' => !empty($inspection['completed_at']) ? date('c', strtotime($inspection['completed_at'])) : null,
                 'inspector' => array(

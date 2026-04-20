@@ -13,6 +13,7 @@ $route['dashboard'] = 'dashboard/index';
 $route['dashboard/tasks'] = 'dashboard/tasks';
 $route['dashboard/reports'] = 'dashboard/reports';
 $route['dashboard/equipment'] = 'dashboard/equipment';
+$route["print"] = "dashboard/print_equipment";
 
 // API Routes
 $route['api/login'] = 'auth/login';
