@@ -188,6 +188,9 @@
                                     </span>
                                 </td>
                                 <td class="text-end">
+                                    <a href="<?php echo site_url('dashboard/checklist-questions/' . $item['id']); ?>" class="btn btn-sm btn-primary me-1">
+                                        <i class="ri-list-check-2 me-1"></i> Questions
+                                    </a>
                                     <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="<?php echo $item['id']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" data-qr="<?php echo htmlspecialchars($item['qr_code']); ?>" data-model="<?php echo htmlspecialchars($item['model'] ?? ''); ?>" data-location="<?php echo htmlspecialchars($item['location'] ?? ''); ?>" data-manufacturer="<?php echo htmlspecialchars($item['manufacturer'] ?? ''); ?>" data-status="<?php echo $item['status']; ?>">
                                         <i class="ri-edit-line me-1"></i> Edit
                                     </button>

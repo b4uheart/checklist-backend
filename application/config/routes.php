@@ -13,6 +13,11 @@ $route['dashboard'] = 'dashboard/index';
 $route['dashboard/tasks'] = 'dashboard/tasks';
 $route['dashboard/reports'] = 'dashboard/reports';
 $route['dashboard/equipment'] = 'dashboard/equipment';
+$route['dashboard/checklist-questions/(:num)'] = 'dashboard/checklist_questions/$1';
+$route['dashboard/checklist-questions/(:num)/add'] = 'dashboard/add_checklist_question/$1';
+$route['dashboard/checklist-questions/(:num)/edit/(:num)'] = 'dashboard/edit_checklist_question/$1/$2';
+$route['dashboard/checklist-questions/(:num)/delete/(:num)'] = 'dashboard/delete_checklist_question/$1/$2';
+$route['dashboard/print-equipment'] = 'dashboard/print_equipment';
 $route["print"] = "dashboard/print_equipment";
 
 // API Routes

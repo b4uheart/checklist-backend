@@ -15,6 +15,41 @@ class Checklist_question_model extends CI_Model {
         return $query->result_array();
     }
 
+    public function get_question($id, $equipment_id = null) {
+        $this->db->where('id', $id);
+
+        if ($equipment_id !== null) {
+            $this->db->where('equipment_id', $equipment_id);
+        }
+
+        return $this->db->get('checklist_questions')->row_array();
+    }
+
+    public function create($data) {
+        $this->db->insert('checklist_questions', $data);
+        return $this->db->affected_rows() > 0;
+    }
+
+    public function update($id, $data, $equipment_id = null) {
+        $this->db->where('id', $id);
+
+        if ($equipment_id !== null) {
+            $this->db->where('equipment_id', $equipment_id);
+        }
+
+        return $this->db->update('checklist_questions', $data);
+    }
+
+    public function delete($id, $equipment_id = null) {
+        $this->db->where('id', $id);
+
+        if ($equipment_id !== null) {
+            $this->db->where('equipment_id', $equipment_id);
+        }
+
+        return $this->db->delete('checklist_questions');
+    }
+
     public function count_by_equipment_ids($equipment_ids) {
         if (empty($equipment_ids)) {
             return array();

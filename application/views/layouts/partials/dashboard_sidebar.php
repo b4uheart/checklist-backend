@@ -54,7 +54,7 @@
             <li class="side-nav-item">
                 <a href="<?php echo site_url('dashboard/reports'); ?>" class="side-nav-link <?php echo $current_page === 'reports' ? 'active' : ''; ?>">
                     <i class="ri-bar-chart-box-line"></i>
-                    <span> Reports </span>
+                    <span> Equipment Reports </span>
                 </a>
             </li>
 
