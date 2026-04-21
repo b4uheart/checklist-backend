@@ -131,10 +131,35 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning">Update Equipment</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Equipment QR Code</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrContainer">
+                    <canvas id="qrCanvas" style="max-width: 300px; max-height: 300px;"></canvas>
+                </div>
+                <div class="mt-3">
+                    <h6 id="qrName"></h6>
+                    <p class="text-muted mb-0" id="qrCodeText"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printQR()">Print QR</button>
+            </div>
         </div>
     </div>
 </div>
@@ -194,9 +219,9 @@
                                     <button class="btn btn-sm btn-warning me-1 edit-btn" data-id="<?php echo $item['id']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" data-qr="<?php echo htmlspecialchars($item['qr_code']); ?>" data-model="<?php echo htmlspecialchars($item['model'] ?? ''); ?>" data-location="<?php echo htmlspecialchars($item['location'] ?? ''); ?>" data-manufacturer="<?php echo htmlspecialchars($item['manufacturer'] ?? ''); ?>" data-status="<?php echo $item['status']; ?>">
                                         <i class="ri-edit-line me-1"></i> Edit
                                     </button>
-                                    <a href="<?php echo site_url('api/equipment/qr/' . $item['qr_code']); ?>" class="btn btn-sm btn-info me-1" target="_blank">
+    <button type="button" class="btn btn-sm btn-info me-1 show-qr-btn" data-qr="<?php echo htmlspecialchars($item['qr_code']); ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" data-location="<?php echo htmlspecialchars($item['location'] ?? ''); ?>">
                                         <i class="ri-eye-line me-1"></i> QR
-                                    </a>
+                                    </button>
                                     <a href="<?php echo site_url('dashboard/delete_equipment/' . $item['id']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">
                                         <i class="ri-delete-bin-line me-1"></i> Delete
                                     </a>
@@ -212,7 +237,91 @@
     </div>
 </div>
 
+<style>
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 1cm;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    #qrModal .modal-body,
+    #qrModal .modal-body * {
+        visibility: visible !important;
+    }
+    
+    #qrModal {
+        position: absolute !important;
+        left: 0;
+        top: 0;
+        width: 100vw !important;
+        height: 100vh !important;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    #qrModal .modal-dialog {
+        max-width: none !important;
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        position: static !important;
+    }
+    
+    #qrModal .modal-content {
+        height: 100% !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    #qrModal .modal-header,
+    #qrModal .modal-footer {
+        display: none !important;
+    }
+    
+    /* #qrModal .modal-body {
+        padding: 40px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: top !important;
+        justify-content: center !important;
+        height: 100% !important;
+    } */
+    
+    #qrContainer {
+        margin-bottom: 20px !important;
+    }
+    
+    #qrContainer canvas {
+        width: 400px !important;
+        height: 400px !important;
+        max-width: 400px !important;
+        max-height: 400px !important;
+    }
+    
+    #qrName {
+        font-size: 26px !important;
+        font-weight: bold !important;
+        margin-bottom: 10px !important;
+        text-align: center !important;
+    }
+    
+    #qrCodeText {
+        font-size: 24px !important;
+        font-family: monospace !important;
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.4.4/qrcode.js" ></script>
 <script>
+function onQRCodeLoaded() {
+    console.log('QRCode library loaded');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const editButtons = document.querySelectorAll('.edit-btn');
     const editModal = document.getElementById('editEquipmentModal');
@@ -223,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('edit_id').value = this.dataset.id;
             document.getElementById('edit_name').value = this.dataset.name;
             document.getElementById('edit_qr_code').value = this.dataset.qr;
-            document.getElementById('edit_model').value = this.dataset.model;
+            document.getElementById('edit_model').value = this.dataset.model; 
             document.getElementById('edit_location').value = this.dataset.location;
             document.getElementById('edit_manufacturer').value = this.dataset.manufacturer;
             document.getElementById('edit_status').value = this.dataset.status;
@@ -231,5 +340,40 @@ document.addEventListener('DOMContentLoaded', function() {
             new bootstrap.Modal(editModal).show();
         });
     });
+
+    // QR Modal functionality
+    const qrButtons = document.querySelectorAll('.show-qr-btn');
+    const qrModal = document.getElementById('qrModal');
+
+    qrButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            console.log(this.dataset);   
+            const qrCode = this.dataset.qr;
+            const name = this.dataset.name;
+            const location = this.dataset.location;
+            
+            document.getElementById('qrName').textContent = name;
+            document.getElementById('qrCodeText').textContent = 'Location: ' + location;
+            
+            const canvas = document.getElementById('qrCanvas');
+            
+            if (typeof QRCode !== 'undefined') {
+                QRCode.toCanvas(canvas, qrCode, { width: 256, margin: 1 }, function (error) {
+                    if (error) console.error(error);
+                });
+            } else {
+                canvas.getContext('2d').fillText('QRCode library not loaded yet. Try again.', 10, 50);
+                console.error('QRCode not defined');
+            }
+            
+            new bootstrap.Modal(qrModal).show();
+        });
+    });
 });
+</script>
+
+<script>
+function printQR() {
+    window.print();
+}
 </script>
